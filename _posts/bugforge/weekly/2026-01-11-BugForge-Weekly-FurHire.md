@@ -4,7 +4,7 @@ title:  "BugForge - Weekly - FurHire"
 date:   2026-01-11 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [sql-injection,jwt,privilege-escalation]
-categories: [BugForge]
+categories: [BugForge,weekly,fur-hire]
 ---
 
 # Weekly - FurHire

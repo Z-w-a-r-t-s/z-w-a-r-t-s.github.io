@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Cheesy Does It"
 date:   2026-01-05 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [sqli]
-categories: [BugForge]
+categories: [BugForge,daily,cheesy-does-it]
 ---
 
 # Daily - Cheesy Does It

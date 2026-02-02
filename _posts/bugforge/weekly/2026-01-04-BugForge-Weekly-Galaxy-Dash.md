@@ -4,7 +4,7 @@ title:  "BugForge - Weekly - Galaxy Dash"
 date:   2026-01-04 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [prototype-pollution]
-categories: [BugForge]
+categories: [BugForge,weekly,galaxy-dash]
 ---
 
 # Weekly - Galaxy Dash

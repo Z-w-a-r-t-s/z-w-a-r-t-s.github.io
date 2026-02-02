@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Copy Pasta"
 date:   2026-01-07 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [idor,broken-access-control]
-categories: [BugForge]
+categories: [BugForge,daily,copy-pasta]
 ---
 
 # Daily - Copy Pasta

@@ -4,7 +4,7 @@ title:  "BugForge - Weekly - FurHire"
 date:   2025-12-29 10:15
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [waf-by-pass,xss,csrf]
-categories: [BugForge]
+categories: [BugForge,weekly,fur-hire]
 ---
 
 # Weekly - FurHire

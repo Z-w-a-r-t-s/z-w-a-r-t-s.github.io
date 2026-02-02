@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Cafe Club"
 date:   2025-12-28 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [brute-force,business-logic-flaw]
-categories: [BugForge]
+categories: [BugForge,daily,cafe-club]
 ---
 
 # Daily - Cafe Club
@@ -30,8 +30,7 @@ This vulnerability is a `business logic flaw involving predictable identifiers a
 
 ### Step 1 - Application Functionality Review
 
-The first step was to analyze the gift card purchase and redemption workflow to understand how gift cards are generated and validated.  
-This included reviewing how codes are issued during purchase and how they are processed when submitted for redemption.
+The first step was to analyze the gift card purchase and redemption workflow to understand how gift cards are generated and validated.  This included reviewing how codes are issued during purchase and how they are processed when submitted for redemption.
 
 The objective was to identify which portions of the gift card code were meaningful and whether adequate server-side validation and ownership checks were enforced.
 
@@ -48,17 +47,17 @@ This established a baseline for assessing code structure and randomness.
 
 ### Step 3 - Identifying Predictable Patterns
 
-By comparing the collected gift card codes, a clear pattern emerged.  
-Most of the gift card code remained static or predictable, while only the final four letters changed between purchases.
+By comparing the collected gift card codes, a clear pattern emerged. Most of the gift card code remained static or predictable, while only the final four letters changed between purchases.
 
 This demonstrated insufficient entropy in the gift card generation process and indicated that the remaining keyspace was small enough to brute force.
 
+![Gift Card 1](/images/bug-forge/daily/cafe-club/brute-force/gift-card-1.png)
+![Gift Card 2](/images/bug-forge/daily/cafe-club/brute-force/gift-card-2.png)
 ---
 
 ### Step 4 - Wordlist Preparation
 
-A wordlist was prepared to enumerate all possible combinations for the final four digits of the gift card code.  
-AI was used to efficiently generate a complete wordlist covering the entire four-digit range.
+A wordlist was prepared to enumerate all possible combinations for the final four digits of the gift card code. AI was used to efficiently generate a complete wordlist covering the entire four-digit range.
 
 This wordlist was later used to automate redemption attempts.
 
@@ -68,8 +67,9 @@ This wordlist was later used to automate redemption attempts.
 
 ### Step 5 - Redeem Endpoint Identification
 
-The gift card redemption endpoint was identified by observing network requests made when submitting a gift card code through the application.  
-This revealed the request structure and parameters used to validate gift card codes.
+The gift card redemption endpoint was identified by observing network requests made when submitting a gift card code through the application. This revealed the request structure and parameters used to validate gift card codes.
+
+![Redeem Giftcard - Request](/images/bug-forge/daily/cafe-club/brute-force/redeem-giftcard-request.png)
 
 Understanding this endpoint was required to automate the attack.
 
@@ -77,8 +77,9 @@ Understanding this endpoint was required to automate the attack.
 
 ### Step 6 - Brute Force Execution
 
-Using the prepared wordlist, the redemption endpoint was systematically brute forced by varying only the final four digits of the gift card code.  
-All other portions of the code remained unchanged, matching the predictable structure identified earlier.
+Using the prepared wordlist, the redemption endpoint was systematically brute forced by varying only the final four digits of the gift card code. All other portions of the code remained unchanged, matching the predictable structure identified earlier.
+
+![Redeem Giftcard - Automate](/images/bug-forge/daily/cafe-club/brute-force/redeem-gift-card-automate.png)
 
 Requests were sent iteratively until a valid gift card was accepted.
 
@@ -86,10 +87,11 @@ Requests were sent iteratively until a valid gift card was accepted.
 
 ### Step 7 - Flag Retrieval
 
-The attack succeeded once a valid gift card code was redeemed that did not belong to the authenticated user.  
-This confirmed that gift cards were not properly bound to user accounts and that no effective anti-automation controls were in place.
+The attack succeeded once a valid gift card code was redeemed that did not belong to the authenticated user. This confirmed that gift cards were not properly bound to user accounts and that no effective anti-automation controls were in place.
 
 Redeeming the unauthorized gift card revealed the flag and completed the challenge.
+
+![Flag](/images/bug-forge/daily/cafe-club/brute-force/flag.png)
 
 ---
 

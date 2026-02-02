@@ -4,7 +4,7 @@ title:  "BugForge - Daily - CopyPasta"
 date:   2026-01-14 19:48
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [idor]
-categories: [BugForge]
+categories: [BugForge,daily,copy-pasta]
 ---
 
 # Daily - CopyPasta

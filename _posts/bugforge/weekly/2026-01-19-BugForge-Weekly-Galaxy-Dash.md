@@ -4,7 +4,7 @@ title:  "BugForge - Weekly - Galxy Dash"
 date:   2026-01-19 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [business-logic-flaw,type-confusion]
-categories: [BugForge]
+categories: [BugForge,weekly,galaxy-dash]
 ---
 
 # Weekly - Galxy Dash

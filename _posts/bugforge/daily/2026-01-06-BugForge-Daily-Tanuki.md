@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Tanuki"
 date:   2026-01-06 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [xxe]
-categories: [BugForge]
+categories: [BugForge,daily,tanuki]
 ---
 
 # Daily - Tanuki

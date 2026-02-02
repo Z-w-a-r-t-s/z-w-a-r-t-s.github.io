@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Ottergram"
 date:   2026-01-10 20:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [graphql,introspection,idor,broken-access-control]
-categories: [BugForge]
+categories: [BugForge,daily,ottergram]
 ---
 
 # Daily - Ottergram

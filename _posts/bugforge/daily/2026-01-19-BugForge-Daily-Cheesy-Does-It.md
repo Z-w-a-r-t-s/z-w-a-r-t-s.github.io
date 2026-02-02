@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Cheesy Does It"
 date:   2026-01-19 20:02
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [business-logic-flaw,type-confusion]
-categories: [BugForge]
+categories: [BugForge,daily,cheesy-does-it]
 ---
 
 # Daily - Cheesy Does It

@@ -4,7 +4,7 @@ title:  "BugForge - Daily - Tanuki"
 date:   2026-01-19 20:02
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [xxe]
-categories: [BugForge]
+categories: [BugForge,daily,tanuki]
 ---
 
 # Daily - Cheesy Does It
