@@ -10,6 +10,7 @@ categories: [BugForge,daily,shady-oaks-finance]
 # Daily - Shady Oaks Finance (Repeat)
 
 This is a repeat of the daily challenge from [January 2nd, 2026](https://zwarts.dev/posts/2026/01/02/BugForge-Daily-Shady-Oaks-Finance/).
+fcad7e33de70c78c7994c9368f81f967d05f2e
 
 ---
 
@@ -41,4 +42,3 @@ This represents a fundamental design flaw where authorization decisions are dele
 - **CWE:** CWE-639 - Authorization Bypass Through User-Controlled Key
 
 ---
-
