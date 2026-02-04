@@ -7,7 +7,7 @@ tags:   [broken-access-control,idor]
 categories: [BugForge,daily,copy-pasta]
 ---
 
-# Daily - Cheesy Does It
+# Daily - Copy Pasta
 ><br/><b>Vulnerabilities Covered:</b>
 <br/>
 Broken Access Control
