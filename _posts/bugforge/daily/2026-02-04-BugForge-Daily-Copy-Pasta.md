@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "BugForge - Daily - Copy Pasta (Repeat)"
-date:   2026-02-04 20:00
+date:   2026-02-04 19:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [idor]
 categories: [BugForge,daily,copy-pasta]
