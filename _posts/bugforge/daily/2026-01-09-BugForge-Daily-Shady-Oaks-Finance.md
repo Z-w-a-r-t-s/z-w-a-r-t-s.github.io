@@ -17,7 +17,7 @@ Broken Authentication
 <br/>
 <b>Summary:</b>
 <br/>
-This challenge demonstrates a **JWT (JSON Web Token) authentication bypass** vulnerability caused by improper algorithm validation. The application accepts JWTs with the `alg` header set to `none`, which instructs the server to skip signature verification entirely. By modifying the JWT header to use the none algorithm and removing the signature portion, an attacker can tamper with the payload claims—specifically changing the `role` from `user` to `admin`—without needing to know the secret key used for signing. This allows complete authentication bypass and privilege escalation to administrative access, enabling retrieval of sensitive data from protected admin endpoints.
+This challenge demonstrates a **JWT (JSON Web Token) authentication bypass** vulnerability caused by improper algorithm validation. The application accepts JWTs with the `alg` header set to `none`, which instructs the server to skip signature verification entirely. By modifying the JWT header to use the none algorithm and removing the signature portion, an attacker can tamper with the payload claims specifically changing the `role` from `user` to `admin`, without needing to know the secret key used for signing. This allows complete authentication bypass and privilege escalation to administrative access, enabling retrieval of sensitive data from protected admin endpoints.
 <br/>
 <br/>
 <b>Reference:</b>
@@ -28,111 +28,49 @@ This challenge demonstrates a **JWT (JSON Web Token) authentication bypass** vul
 
 ## Solution
 
-### Step 1 - Account Registration and JWT Discovery
+### Step 1 - Application Analysis and Endpoint Discovery
 
-Register a new account on the Shady Oaks Financial trading platform. After successful registration, the application authenticates the user and returns a JWT token in the response.
+Register a new account on the Shady Oaks Financial trading platform. After successful registration, use JS Recon Buddy to enumerate all application endpoints and identify potential targets. Notice the `/api/admin/flag` endpoint, which indicates administrative functionality that requires elevated privileges to access.
 
-Intercept the registration request to `/api/register` using a proxy tool such as Burp Suite. The response contains a JWT token that will be used for all subsequent authenticated requests via the `Authorization: Bearer <token>` header.
-
----
-
-### Step 2 - JWT Structure Analysis
-
-Analyze the JWT token structure. A JWT consists of three Base64-encoded parts separated by periods:
-- **Header** - Contains the algorithm (`alg`) and token type (`typ`)
-- **Payload** - Contains the claims (user data such as `id`, `username`, `role`)
-- **Signature** - Cryptographic signature to verify token integrity
-
-Using a JWT decoder (such as jwt.io, Burp Suite's JWT Editor extension, or browser DevTools), decode the token to reveal:
-
-**Header:**
-```json
-{
-  "alg": "HS256",
-  "typ": "JWT"
-}
-```
-
-**Payload:**
-```json
-{
-  "id": 4,
-  "username": "tester",
-  "role": "user",
-  "iat": 1767932707
-}
-```
-
-The `HS256` algorithm indicates a symmetric signing algorithm, and the `role` claim set to `user` is the target for privilege escalation.
+![Endpoints](/images/bug-forge/daily/shady-oaks-financial/jwt/js-recon-buddy-endpoints.png)
 
 ---
 
-### Step 3 - Testing Signature Validation
+### Step 2 - JWT Token Inspection
 
-Before attempting JWT attacks, verify whether the server actually validates the token signature.
+Using Caido's JWT Analyzer plugin, examine the structure of the authentication token received after login. Send any authenticated request to the plugin for analysis.
 
-Modify the `role` claim from `user` to `admin` in the payload while keeping the original signature. Send a request with this tampered token. The server responds with an "Invalid token" error, confirming that signature validation is being performed.
+![JWT Analyzer - Dashboard](/images/bug-forge/daily/shady-oaks-financial/jwt/jwt-analyser-dashboard.png)
 
-This rules out the simple approach of modifying the payload without addressing the signature.
+Click on JWT Editor to inspect and manipulate the token structure.
 
----
+![JWT Editor](/images/bug-forge/daily/shady-oaks-financial/jwt/jwt-editor.png)
 
-### Step 4 - None Algorithm Attack
-
-The none algorithm attack exploits servers that accept JWTs with `alg` set to `none`, effectively disabling signature verification.
-
-Modify the JWT:
-1. Change the header `alg` value from `HS256` to `none`
-2. Update the payload `role` from `user` to `admin`
-3. Remove the signature portion entirely, but **keep the trailing period**
-
-The modified token structure becomes:
-```
-<base64-header>.<base64-payload>.
-```
-
-Using a tool like `jwt_tool`:
-```bash
-python3 jwt_tool.py "<original-jwt>" -X a
-```
-
-Or manually craft the token by Base64-encoding the modified header and payload.
-
-**Important:** The trailing period after the payload is required for the token to be valid.
+The decoded JWT payload reveals critical claims including `id`, `username`, and `role`. The current user has the role set to `user`, which restricts access to administrative endpoints.
 
 ---
 
-### Step 5 - Validating the Attack
+### Step 3 - None Algorithm Attack
 
-Send a request to a protected endpoint (such as `/api/stocks` or `/api/verify-token`) with the modified JWT in the `Authorization` header.
+Exploit the JWT vulnerability by modifying the token header to use the `none` algorithm. In the JWT Analyzer, change the `alg` field from its current value to `none`, and update the payload claims to escalate privileges. Set the `role` to `admin`, update the `id` to `1`, and adjust other identifying fields as needed.
 
-If the server accepts the token and returns a valid response instead of an authentication error, the none algorithm attack is successful. This confirms that the server does not properly enforce signature verification when the algorithm is set to none.
-
----
-
-### Step 6 - Admin Endpoint Discovery
-
-Identify administrative endpoints by examining the client-side JavaScript files. Using browser DevTools (Debugger tab) or a bookmarklet to extract endpoints from JavaScript:
-
-Navigate to the JavaScript files and search for API routes. Look for files like `AdminPanel.js` which reveal protected endpoints:
-- `/api/admin/users`
-- `/api/admin/flag`
-
-These endpoints require administrative privileges to access.
+![JWT Manipulation](/images/bug-forge/daily/shady-oaks-financial/jwt/jwt-token-manipulation.png)
 
 ---
 
-### Step 7 - Flag Retrieval
+### Step 4 - Token Validation
 
-With the forged admin JWT, access the `/api/admin/flag` endpoint.
+Test the crafted JWT by sending a request to a protected endpoint such as `/api/verify-token` with the modified token in the `Authorization` header. If the server accepts the token and returns a successful response instead of an authentication error, the none algorithm vulnerability is confirmed. This proves the server does not properly validate the signature algorithm and accepts unsigned tokens.
 
-Add the `Authorization` header with the Bearer token containing the modified JWT (with `alg: none` and `role: admin`):
+![Token Validation](/images/bug-forge/daily/shady-oaks-financial/jwt/token-validation.png)
 
-```
-Authorization: Bearer <forged-jwt-token>
-```
+---
 
-The server accepts the forged token and returns the flag, confirming successful privilege escalation through JWT tampering.
+### Step 5 - Flag Retrieval
+
+With a validated admin JWT token, access the `/api/admin/flag` endpoint identified during reconnaissance. The server processes the request using the forged token's claims, granting administrative access and returning the flag in the response.
+
+![Flag](/images/bug-forge/daily/shady-oaks-financial/jwt/flag.png)
 
 ---
 
@@ -185,13 +123,5 @@ jwt.verify(token, secretKey, { algorithms: ['HS256'] });
 - Add comprehensive logging for authentication failures and anomalous token patterns
 - Regularly audit JWT library configurations and update dependencies
 - Consider using a well-tested authentication framework that handles JWT security by default
-
----
-
-### Tools Used
-- Burp Suite with JWT Editor extension
-- jwt_tool (`python3 jwt_tool.py -X a` for none algorithm attack)
-- Browser DevTools for JavaScript analysis and Local Storage inspection
-- JWT decoders (jwt.io, JWT Auditor)
 
 ---
