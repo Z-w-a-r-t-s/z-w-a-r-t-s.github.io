@@ -65,6 +65,8 @@ Before submitting the registration request, the `user_role` value was modified f
 
 The manipulated request was then sent to the server without any client-side validation errors.
 
+![Registration Request](/images/bug-forge/daily/Tanuki/mass-assignment/registration-request.png)
+
 ---
 
 ### Step 6 - Authentication with Elevated Privileges
@@ -80,6 +82,8 @@ An **Admin** tab was visible within the application interface.
 Navigating to the admin functionality confirmed unauthorized administrative access.
 
 Accessing the admin area revealed the flag, completing the challenge.
+
+![Flag](/images/bug-forge/daily/Tanuki/mass-assignment/flag.png)
 
 ---
 
