@@ -7,7 +7,7 @@ tags:   [web-sockets,idor]
 categories: [BugForge,daily,ottergram]
 ---
 
-# Daily - Shady Oaks Finance
+# Daily - Ottergram
 ><br/><b>Vulnerabilities Covered:</b>
 <br/>
 IDOR (Insecure Direct Object Reference) via **web-sockets**
