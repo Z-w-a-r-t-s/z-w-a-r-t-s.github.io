@@ -28,7 +28,7 @@ This challenge exploits a **business logic vulnerability** in the checkout proce
 
 ### Step 1 - Application Analysis and Account Setup
 
-Begin by exploring the CafeClub application. The site functions as an e-commerce platform selling coffee-related products. Launch Burp Suite to monitor all HTTP requests during the testing process.
+Begin by exploring the CafeClub application. The site functions as an e-commerce platform selling coffee-related products. Launch Caido to monitor all HTTP requests during the testing process.
 
 Create a new user account through the sign-up option on the login page and log in to access the application's features. This establishes a baseline for testing the shopping and checkout functionality.
 
@@ -43,7 +43,7 @@ After logging in, analyze the available application features:
 - Points/rewards system
 - Checkout process
 
-Initial testing on product ID parameters for IDOR and SQL injection yielded no results. XSS testing on input fields showed proper encoding. Focus shifted to the API endpoints captured in Burp Suite, particularly those under the `/api/` directory.
+Initial testing on product ID parameters for IDOR and SQL injection yielded no results. XSS testing on input fields showed proper encoding. Focus shifted to the API endpoints captured in Caido, particularly those under the `/api/` directory.
 
 ---
 
@@ -51,43 +51,49 @@ Initial testing on product ID parameters for IDOR and SQL injection yielded no r
 
 The cart page indicates that users earn 1 point for every 1 euro spent. Purchasing a product (e.g., Brazilian Santos Coffee Beans for 21.99 euros) credits the corresponding points to the account.
 
+![Points UI](/images/bug-forge/daily/cafe-club/points-to-use/points-to-use-ui.png)
+
 Complete a legitimate purchase to understand the normal checkout flow and observe how points are earned and displayed. After purchasing, the account balance reflects the earned points.
+
+![Points to use Checkout](/images/bug-forge/daily/cafe-club/points-to-use/points-to-use-ui-checkout.png)
 
 ---
 
 ### Step 4 - Checkout Request Analysis
 
-Add a product to the cart and proceed to checkout. Intercept the checkout request using Burp Suite. The checkout process consists of three steps:
+Add a product to the cart and proceed to checkout. Intercept the checkout request using Caido. The checkout process consists of three steps:
+
 1. Review Order
 2. Payment
 3. Confirmation
 
 Analyze the POST request to the checkout endpoint. Notice that the request includes a `points_to_use` parameter that specifies how many points the user wants to redeem for a discount.
 
+![Request - Points to use](/images/bug-forge/daily/cafe-club/points-to-use/request-with-points-to-use.png)
+
+
 ---
 
 ### Step 5 - Business Logic Exploitation
 
-With the checkout request captured in Burp Suite Repeater:
-
 1. Add a new product to the cart
-2. Modify the `points_to_use` parameter to a value far exceeding the actual point balance (e.g., 10,000 points)
-3. Forward the modified request
+2. Click on `Proceed to Checkout`
+3. Click on `Continue to Payment`
+4. Turn on Intercept (Button should show `Queuing`)`
+![Intercept On](/images/bug-forge/daily/cafe-club/points-to-use/caido-interceptor.png)
+1. Enter `Cardholder Name` and click on `Place Order`
+![Payment - UI](/images/bug-forge/daily/cafe-club/points-to-use/payment-ui.png)
+1. Intercept the request and modify the `points_to_use` parameter to a value far exceeding the actual point balance (e.g., 10,000 points)
+![Intercept Request](/images/bug-forge/daily/cafe-club/points-to-use/caido-intercept-request.png)
 
-The server processes the request successfully despite the user not having sufficient points. The application fails to validate whether the user actually possesses the claimed points before applying the discount.
+1. Forward the modified request
+
+The server processes the request successfully despite the user not having sufficient points. The application fails to validate whether the user actually possesses the claimed points before applying the discount and returned the flag in the response.
+
+![Flag](/images/bug-forge/daily/cafe-club/points-to-use/flag.png)
 
 ---
 
-### Step 6 - Confirming the Vulnerability
-
-After completing the manipulated purchase, check the account status on the home page. The points balance now shows a **negative value**, confirming that:
-- The server trusted the client-supplied `points_to_use` value
-- No server-side validation occurred to verify the actual point balance
-- The purchase was completed with unauthorized discounts
-
-This demonstrates a classic business logic vulnerability where the developer assumed users would never modify the points parameter, leading to missing server-side validation.
-
----
 
 ### Impact
 - Unauthorized acquisition of products at reduced or zero cost
@@ -109,7 +115,7 @@ This demonstrates a classic business logic vulnerability where the developer ass
 ---
 
 ### Root Cause
-The backend fails to validate the `points_to_use` parameter against the user's actual point balance before processing the checkout transaction. The application trusts the value sent from the client without verifying it server-side. This is a flawed assumption that users will only submit legitimate values through the intended UI, ignoring the possibility of request manipulation through tools like Burp Suite.
+The backend fails to validate the `points_to_use` parameter against the user's actual point balance before processing the checkout transaction. The application trusts the value sent from the client without verifying it server-side. This is a flawed assumption that users will only submit legitimate values through the intended UI, ignoring the possibility of request manipulation through tools like Caido.
 
 The developer assumed that because the UI disables the points option when the balance is zero, users would never be able to use points they don't have. However, client-side controls provide no security guarantee when the server fails to enforce the same rules.
 
