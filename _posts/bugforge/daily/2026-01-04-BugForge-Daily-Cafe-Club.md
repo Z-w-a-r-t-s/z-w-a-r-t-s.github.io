@@ -79,7 +79,7 @@ Analyze the POST request to the checkout endpoint. Notice that the request inclu
 1. Add a new product to the cart
 2. Click on `Proceed to Checkout`
 3. Click on `Continue to Payment`
-4. Turn on Intercept (Button should show `Queuing`)`
+4. Turn on Intercept (Button should show `Queuing`)
 ![Intercept On](/images/bug-forge/daily/cafe-club/points-to-use/caido-interceptor.png)
 1. Enter `Cardholder Name` and click on `Place Order`
 ![Payment - UI](/images/bug-forge/daily/cafe-club/points-to-use/payment-ui.png)
