@@ -72,6 +72,8 @@ Since `1=1` always evaluates to true, the database returns the first user (typic
 ### Step 6 - Flag Retrieval
 Upon successful authentication bypass, the application grants admin access and immediately reveals the challenge flag, confirming the SQL injection vulnerability in the authentication mechanism.
 
+![Flag](/images/bug-forge/daily/cheesy-does-it/login-sqli/flag.png)
+
 ---
 
 ### Impact
