@@ -31,8 +31,6 @@ This challenge demonstrates how legacy API endpoints can introduce critical secu
 
 ### Step 1 - Initial Reconnaissance and API Version Discovery
 
-![Register Request](/images/bug-forge/daily/Sokudo/jwt/registration-request.png)
-
 After registering an account and logging in, all HTTP traffic was monitored using a proxy tool (Caido). Analysis of the requests revealed that all API endpoints used the `/v2` prefix (e.g., `/v2/login`, `/v2/stats`, `/v2/register`).
 
 ![API Versioning](/images/bug-forge/daily/Sokudo/jwt/api-versioning.png)
