@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "BugForge - Daily - CopyPasta"
+title:  "BugForge - Daily - Copy Pasta"
 date:   2026-01-14 19:48
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [idor]
 categories: [BugForge,daily,copy-pasta]
 ---
 
-# Daily - CopyPasta
+# Daily - Copy Pasta
 ><br/><b>Vulnerabilities Covered:</b>
 <br/>
 IDOR (Insecure Direct Object Reference)

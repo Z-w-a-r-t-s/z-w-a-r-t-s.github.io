@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "BugForge - Daily - Cafe Club"
+title:  "BugForge - Daily - Cafe Club (Repeat)"
 date:   2026-02-22 19:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [sqli,sqlite]

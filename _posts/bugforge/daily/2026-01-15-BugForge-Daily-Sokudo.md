@@ -30,7 +30,12 @@ This challenge demonstrates how legacy API endpoints can introduce critical secu
 ## Solution
 
 ### Step 1 - Initial Reconnaissance and API Version Discovery
-After registering an account and logging in, all HTTP traffic was monitored using a proxy tool (Burp Suite). Analysis of the requests revealed that all API endpoints used the `/v2` prefix (e.g., `/v2/login`, `/v2/stats`, `/v2/register`).
+
+![Register Request](/images/bug-forge/daily/Sokudo/jwt/registration-request.png)
+
+After registering an account and logging in, all HTTP traffic was monitored using a proxy tool (Caido). Analysis of the requests revealed that all API endpoints used the `/v2` prefix (e.g., `/v2/login`, `/v2/stats`, `/v2/register`).
+
+![API Versioning](/images/bug-forge/daily/Sokudo/jwt/api-versioning.png)
 
 This immediately prompted investigation into whether older API versions existed. Testing the same endpoints with `/v1` instead of `/v2` confirmed that legacy endpoints were still accessible.
 
@@ -39,59 +44,38 @@ This immediately prompted investigation into whether older API versions existed.
 ---
 
 ### Step 2 - Endpoint Enumeration
-To identify all available endpoints across both API versions, Jason Haddix's endpoint discovery script was executed against the application. This enumeration revealed several endpoints, with particular interest in routes tagged with "admin" functionality.
+JS Recon Buddy was used to enumerate available endpoints across the application. Reviewing the results, several `admin`-tagged routes stood out as interesting targets.
 
-The enumeration uncovered the following key endpoints:
-- `/v2/admin/flag` - Returns "INVALID TOKEN" when accessed with a regular user token
-- `/v1/admin/flag` - Returns "403 Forbidden" when accessed with a regular user token
+![JS Recon Buddy](/images/bug-forge/daily/Sokudo/jwt/endpoints-js-recon-buddy.png)
 
-**Key Observation:** The different error responses between versions indicated a significant behavioral difference. The `/v2` endpoint properly validated the JWT token and rejected it as invalid, while the `/v1` endpoint appeared to accept the token but denied access based on authorization (403 Forbidden).
+Both endpoints were tested immediately using the original tokens from the authenticated session.
 
 ---
 
-### Step 3 - Analyzing the Authentication Difference
-The distinction in error responses revealed a critical vulnerability:
+### Step 3 - JWT Algorithm None Attack
+With admin-tagged endpoints identified, the next step was to attempt a JWT Algorithm None attack. By setting the JWT algorithm to `"none"`, the signature requirement is dropped entirely. The token can be forged with arbitrary claims and the server is expected to accept it without verification.
 
-| Endpoint         | Response      | Implication                                          |
-| ---------------- | ------------- | ---------------------------------------------------- |
-| `/v2/admin/flag` | INVALID TOKEN | Full JWT validation including signature verification |
-| `/v1/admin/flag` | 403 Forbidden | Token accepted but authorization check failed        |
+The authenticated user's JWT was decoded to inspect its structure:
 
-The `/v1` endpoint accepting the token without returning "INVALID TOKEN" suggested that it was not properly verifying the JWT signature. This meant the token's claims could potentially be modified without invalidation.
+![JWT Editor](/images/bug-forge/daily/Sokudo/jwt/jwt-editor.png)
 
----
+The following modifications were made to craft the forged token:
+1. Set the `alg` header to `"none"` and removed the signature
+2. Changed `role` from `"user"` to `"admin"`
+3. Changed `user_id` to `1`, assuming the admin account holds the first ID
 
-### Step 4 - JWT Token Manipulation
-With the understanding that the `/v1` endpoint had weak token validation, the next step was to manipulate the JWT claims. The user's JWT token was decoded to reveal its structure:
+![JWT Manipulation](/images/bug-forge/daily/Sokudo/jwt/jwt-manipulation.png)
 
-```json
-{
-  "user_id": 123,
-  "role": "user",
-  "username": "testuser"
-}
-```
+The forged token was tested against both the v2 endpoint (`/v2/admin/flag`) and the v1 endpoint (`/v1/admin/flag`). As expected, the v2 endpoint rejected the token, its signature verification was intact. The v1 endpoint, however, accepted the token without complaint:
 
-The following modifications were made to the token:
-1. Changed `role` from `"user"` to `"admin"`
-2. Changed `user_id` from the current user's ID to `1` (assuming the admin account would have the first ID)
+![JWT None Algorithm Response](/images/bug-forge/daily/Sokudo/jwt/jwt-none-algorith-response.png)
 
-The modified token was re-encoded (without a valid signature, since the endpoint wasn't verifying it).
+With the forged token accepted, the v1 endpoint returned the flag:
+
+![Flag](/images/bug-forge/daily/Sokudo/jwt/flag.png)
 
 ---
 
-### Step 5 - Exploiting the Vulnerability
-The manipulated JWT token was used to make a request to the vulnerable endpoint:
-
-1. Intercept a request to `/v1/admin/flag` in Burp Suite
-2. Replace the Authorization header with the modified JWT token
-3. Forward the request
-
-The server accepted the manipulated token and returned the flag, confirming successful exploitation of:
-- Missing JWT signature verification on legacy endpoints
-- IDOR vulnerability allowing access to admin account via user ID manipulation
-
----
 
 ### Impact
 - Complete bypass of authentication controls on legacy API endpoints

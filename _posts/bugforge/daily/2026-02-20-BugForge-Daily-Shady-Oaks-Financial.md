@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "BugForge - Daily - Shady Oaks Financial"
+title:  "BugForge - Daily - Shady Oaks Financial (Repeat)"
 date:   2026-02-20 19:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [race-condition,toctou]

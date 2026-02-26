@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "BugForge - Daily - Cheesy Does It"
+title:  "BugForge - Daily - Cheesy Does It (Repeat)"
 date:   2026-02-23 19:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [business-logic-flaw]

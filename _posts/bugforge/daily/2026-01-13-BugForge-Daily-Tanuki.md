@@ -37,6 +37,8 @@ During registration, the server response reveals important information:
 
 This initial reconnaissance provides valuable context about the application's user structure.
 
+![Registration response](/images/bug-forge/daily/Tanuki/idor/regisration-response.png)
+
 ---
 
 ### Step 2 - Application Feature Review
@@ -46,7 +48,10 @@ After logging in, the dashboard presents several features:
 - Available study decks (e.g., "Linux Trivia")
 - Navigation menu with: My Decks, Browse Decks, Stats, and Logout
 
+![Dashboard](/images/bug-forge/daily/Tanuki/idor/dashboard.png)
+
 With IDOR as the target vulnerability, the focus shifts to identifying endpoints that use predictable identifiers.
+
 
 ---
 
@@ -54,12 +59,16 @@ With IDOR as the target vulnerability, the focus shifts to identifying endpoints
 
 Clicking "Start Studying" on a deck loads the URL `/study/2`. The numeric identifier is an immediate candidate for IDOR testing.
 
+![Study Endpoint](/images/bug-forge/daily/Tanuki/idor/study-endpoint.png)
+
 Testing revealed:
 - `/study/1` returns a "Planets & Moons" deck
 - `/study/2` returns the "Linux Trivia" deck
 - `/study/3` returns another valid deck
 
-Using Burp Intruder to enumerate IDs 1-100 (with `limit=100` parameter) identified only 3 valid decks. Filtering responses for the flag pattern `bug{` yielded no results.
+![Study Planets](/images/bug-forge/daily/Tanuki/idor/study-planets.png)
+
+Using Caido Automate to enumerate IDs 1-100 (with `limit=100` parameter) identified only 3 valid decks. Filtering responses for the flag pattern `bug{` yielded no results.
 
 ---
 
@@ -70,11 +79,11 @@ The `/decks/{id}` endpoint was also identified in the HTTP traffic. Similar enum
 - No flag pattern was present in any response
 - Testing `/decks/0` and `/study/0` returned no results (ruling out zero-indexed entries)
 
+![Decks Endpoint](/images/bug-forge/daily/Tanuki/idor/decks-endpoint.png)
+
 ---
 
 ### Step 5 - Discovering the Hidden API Endpoint
-
-After exhausting the obvious endpoints, the key lesson emerged: **always monitor HTTP traffic in the proxy, not just browser URLs**.
 
 When navigating to the **Stats** page, the browser URL showed a static page with no identifiable parameters. However, inspecting the HTTP traffic revealed an API call:
 
@@ -84,31 +93,25 @@ GET /api/stats/4
 
 The `4` in this endpoint correlates directly to the user ID assigned during registration.
 
+![Stats Endpoint](/images/bug-forge/daily/Tanuki/idor/stats-endpoint.png)
+
+
 ---
 
 ### Step 6 - Exploiting the IDOR Vulnerability
 
-With the `/api/stats/{id}` endpoint identified, IDOR testing was straightforward:
+With the `/api/stats/{id}` endpoint identified, IDOR testing was straightforward. Sending the request to Caido Automate, we configured the `id` parameter with a numeric payload range and ran the attack. The server returned statistics for other user IDs without any authorization verification.
 
-1. Sent the request to Burp Repeater
-2. Changed the ID from `4` to `1`
-3. Submitted the modified request
+![Stats Automate Configuration](/images/bug-forge/daily/Tanuki/idor/stats-automate-configuration.png)
 
-The server returned the statistics for user ID 1 without any authorization verification.
 
 ---
 
 ### Step 7 - Flag Retrieval
 
-The response for `/api/stats/1` contained the flag embedded as an achievement field:
+Running the Automate attack and analysing the results, we confirmed that data was returned for other users. The `achievement_flag` field was included in the response payload, completing the challenge through unauthorized access to another user's statistics.
 
-```json
-{
-  "achievement_flag": "bug{...}"
-}
-```
-
-The challenge was completed by accessing another user's data through unauthorized parameter manipulation.
+![Flag](/images/bug-forge/daily/Tanuki/idor/flag.png)
 
 ---
 
