@@ -19,7 +19,7 @@ Insecure Design
 <br/>
 <b>Summary:</b>
 <br/>
-This vulnerability is a **broken access control issue caused by insecure design**, where the application trusts client-supplied input to set sensitive user attributes such as role assignments. Instead of handling role elevation logic server-side based on business rules, the application accepts a `role` parameter directly from the client during the upgrade process. By intercepting and modifying the upgrade request to change the role value from a standard user to `administrator`, an attacker can escalate privileges and gain unauthorized access to administrative functionality. This demonstrates a **fundamental design flaw** where authorization decisions are delegated to the client rather than being enforced by the backend.
+This vulnerability is a **broken access control issue caused by insecure design**, where the application trusts client-supplied input to set sensitive user attributes such as role assignments. Instead of handling role elevation logic server-side based on business rules, the application accepts a `role` parameter directly from the client during the `upgrade process`. By intercepting and modifying the upgrade request to change the role value from a standard user to `administrator`, an attacker can escalate privileges and gain unauthorized access to administrative functionality. This demonstrates a **fundamental design flaw** where authorization decisions are delegated to the client rather than being enforced by the backend.
 <br/>
 <br/>
 <b>Reference:</b>

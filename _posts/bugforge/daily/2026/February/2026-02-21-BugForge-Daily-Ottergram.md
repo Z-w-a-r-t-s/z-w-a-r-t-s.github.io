@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "BugForge - Daily - Shady Ottergram"
+title:  "BugForge - Daily - Ottergram"
 date:   2026-02-21 19:00
 image:  /images/bug-forge/bugforge-logo.png
 tags:   [file-inclusion,path-traversal]
 categories: [BugForge,daily,ottergram]
 ---
 
-# Daily - Shady Ottergram
+# Daily - Ottergram
 ><br/><b>Vulnerabilities Covered:</b>
 <br/>
 Path Traversal (Local File Inclusion) - Unsanitised File Parameter on Image Endpoint
