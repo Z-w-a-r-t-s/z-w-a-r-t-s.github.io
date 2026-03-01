@@ -3,7 +3,7 @@ layout: post
 title:  "BugForge - Daily - Ottergram"
 date:   2026-02-28 19:00
 image:  /images/bug-forge/bugforge-logo.png
-tags:   [broken-access-control,idor,verb-tampering]
+tags:   [broken-access-control,idor,http-verb-tampering]
 categories: [BugForge,daily,ottergram]
 ---
 
