@@ -15,7 +15,7 @@ SQL Injection (UNION-based)
 <br/>
 <b>Summary:</b>
 <br/>
-A **`SQL Injection`** vulnerability was identified in the user profile retrieval functionality where user-supplied input is concatenated directly into SQL queries without proper parameterization or input validation. By injecting a single quote into the profile endpoint, error-based confirmation of the vulnerability was achieved. Using the ORDER BY technique to enumerate the number of columns returned by the query, a UNION-based SQL injection attack was constructed to extract sensitive data from the underlying database. This allowed retrieval of the username and password fields from the users table, ultimately exposing the administrator credentials and the challenge flag.
+A **`SQL Injection`** vulnerability was identified in the `user profile` retrieval functionality where user-supplied input is concatenated directly into SQL queries without proper parameterization or input validation. By injecting a single quote into the profile endpoint, error-based confirmation of the vulnerability was achieved. Using the ORDER BY technique to enumerate the number of columns returned by the query, a UNION-based SQL injection attack was constructed to extract sensitive data from the underlying database. This allowed retrieval of the username and password fields from the users table, ultimately exposing the administrator credentials and the challenge flag.
 <br/>
 <br/>
 <b>Reference:</b>
@@ -50,25 +50,44 @@ Use the `ORDER BY` technique to determine the number of columns returned by the 
 ' ORDER BY 3--
 ```
 
-When the ORDER BY clause references a column number that exceeds the actual count, the application will return an error, revealing the exact number of columns in the result set.
+When the ORDER BY clause references a column number that exceeds the actual count, the application returns an error, revealing the exact number of columns in the result set.
+
+Ordering by 7 returns a valid response:
+
+![Order By 7 - Success](/images/bug-forge/daily/ottergram/sqli-profile/order-by-7.png)
+
+Incrementing to 8 triggers an error, confirming the query returns exactly **7 columns**:
+
+![Order By 8 - Error](/images/bug-forge/daily/ottergram/sqli-profile/order-by-8.png)
+
 
 ---
 
-### Step 4 - UNION-Based Data Extraction
+### Step 4 - Table Extraction
 
-With the column count confirmed, construct a UNION-based SQL injection payload to extract sensitive data from the database. Target the `users` table to retrieve the `username` and `password` fields:
+With 7 columns confirmed, a UNION-based payload is injected to query `sqlite_master` and retrieve all table names along with their schema definitions:
 
 ```
-' UNION SELECT username, password FROM users--
+' UNION SELECT 1,2,3,4,5,GROUP_CONCAT(name,'|'),GROUP_CONCAT(sql,'|') FROM sqlite_master WHERE type='table'-- -
 ```
 
-Adjust the number of NULL placeholders as needed to match the column count identified in the previous step.
+![Table extraction](/images/bug-forge/daily/ottergram/sqli-profile/table-extraction.png)
 
 ---
 
-### Step 5 - Flag Discovery
+### Step 5 - Schema Analysis
 
-Review the extracted data returned in the application response. The administrator account credentials and the challenge flag are revealed within the query results.
+The response reveals the database schema, including a `users` table with the following columns: `id`, `username`, `email`, `full_name`, `bio`, `profile_picture`, `role`, and `password`. The presence of `username` and `password` fields makes this the target table for credential extraction.
+
+---
+
+### Step 6 - Flag Discovery
+
+With the table and column names confirmed, a targeted UNION query is constructed to extract the administrator credentials:
+
+```
+' UNION SELECT 1,2,3,4,5,username, password FROM users WHERE username = 'admin'-- -
+```
 
 ![Flag](/images/bug-forge/daily/ottergram/sqli-profile/flag-response.png)
 
