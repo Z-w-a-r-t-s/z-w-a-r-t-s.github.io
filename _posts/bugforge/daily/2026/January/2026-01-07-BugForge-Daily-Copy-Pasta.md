@@ -15,7 +15,7 @@ IDOR (Insecure Direct Object Reference)
 <br/>
 <b>Summary:</b>
 <br/>
-The CopyPasta application allows users to create and share code snippets with options to make them public or private. The snippet retrieval endpoint (`/api/snippets/:id`) uses sequential integer identifiers without proper authorization checks, allowing any authenticated user to enumerate IDs and access private snippets belonging to other users. By iterating through snippet IDs using Burp Intruder, private snippets containing sensitive data including the challenge flag can be retrieved, demonstrating a classic IDOR vulnerability on the read operation.
+The CopyPasta application allows users to create and share code snippets with options to make them public or private. The snippet retrieval endpoint (`/api/snippets/:id`) uses sequential integer identifiers without proper authorization checks, allowing any authenticated user to enumerate IDs and access private snippets belonging to other users. By iterating through snippet IDs using Caido Replay, private snippets containing sensitive data including the challenge flag can be retrieved, demonstrating a classic IDOR vulnerability on the read operation.
 <br/>
 <br/>
 <b>Reference:</b>
@@ -34,17 +34,18 @@ Attempt basic SQL injection on the login form using payloads such as `admin' OR 
 ---
 
 ### Step 2 - Account Registration and Traffic Analysis
-Register a new user account while capturing traffic in Burp Suite. Key observations from the registration request/response:
+Register a new user account while capturing traffic in Caido. The goal is to determine whether the client is sending role or permission fields to the backend during registration, and whether the endpoint is vulnerable to `Mass Assignment`.
 
-- The registration endpoint uses `/api/register`, indicating an API-driven architecture
-- JWT (JSON Web Token) authentication is in use
-- The response includes a `role` field set to `user`, which was not present in the request (potential mass assignment vector for future testing)
+![Register Request](/images/bug-forge/daily/copy-pasta/idor-snippet/register-request.png)
 
 ---
 
 ### Step 3 - Application Mapping
+
+![Dashboard](/images/bug-forge/daily/copy-pasta/idor-snippet/dashboard.png)
 After logging in, explore the application functionality:
 
+- **Account Management** : Update Account and attempt account deletion
 - **My Snippets / Dashboard**: Create and manage personal code snippets
 - **Public**: View publicly shared snippets from all users with search and language filter options
 - **Create Snippet**: Form with title, language, code content, and visibility toggle (public/private)
@@ -56,6 +57,8 @@ Create a test snippet and observe the response. Note the `id` field (sequential 
 ### Step 4 - Identifying the IDOR Vector
 When viewing a public snippet, observe that the URL follows the pattern `/snippet/:id` and the API endpoint is `/api/snippets/:id`.
 
+![GET Snippet Request](/images/bug-forge/daily/copy-pasta/idor-snippet/Get-Snippet-Request.png)
+
 Key observations:
 - The public dashboard shows 6 snippets
 - When creating your own snippet, the returned `id` value suggests there are more snippets than publicly visible (e.g., id of 8 indicates snippets 1-7 already exist)
@@ -64,23 +67,27 @@ Key observations:
 ---
 
 ### Step 5 - Exploiting the IDOR Vulnerability
-Send the GET request for `/api/snippets/1` to Burp Intruder. Configure the attack:
+Send the GET request for `/api/snippets/1` to Caido Replay. Configure the attack:
 
 - Set the snippet ID as the payload position
-- Use a numeric payload list (e.g., 1-100)
+- Use a numeric payload list (e.g., 1-50)
 - Remove the `If-None-Match` header if present to avoid 304 responses
+- 
+![Automate Configuration](/images/bug-forge/daily/copy-pasta/idor-snippet/automate-configuration.png)
 
 Launch the attack and analyse the responses. Filter results by response length or status code to identify unique snippets.
 
 ---
 
 ### Step 6 - Flag Retrieval
-Review the Intruder results to identify snippets that are not visible in the public dashboard. One of the private snippets contains the flag in the response body.
+Review the Replay results to identify snippets that are not visible in the public dashboard. One of the private snippets contains the flag in the response body.
 
 The flag follows the format `bug{FLAG}` and can be found by:
-- Comparing Intruder results against the public snippet list
+- Comparing Replay results against the public snippet list
 - Searching response bodies for the flag format
 - Identifying snippets where `public: 0` indicates private status
+
+![Flag](/images/bug-forge/daily/copy-pasta/idor-snippet/flag.png)
 
 ---
 
