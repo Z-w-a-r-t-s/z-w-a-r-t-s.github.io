@@ -29,16 +29,16 @@ The Gift Lab application contains an **`Insecure Direct Object Reference (IDOR)`
 ### Step 1 - Application Analysis
 After registering a new account, explore the application to understand its features. Gift Lab allows users to create **Wish Lists**, add and remove items from those lists, share lists with others, and delete lists. There is no profile management in this version of the application.
 
-![Application UI](/images/bug-forge/daily/gift-lab/ui.png)
+![Application UI](/images/bug-forge/daily/gift-lab/idor/ui.png)
 
 ---
 
 ### Step 2 - Examine the Share Functionality
 Navigate to an existing wish list and trigger the **Share** function. Intercept the outgoing request in a proxy tool such as Caido to observe how the share link is constructed.
 
-![Share UI](/images/bug-forge/daily/gift-lab/share-ui.png)
+![Share UI](/images/bug-forge/daily/gift-lab/idor/share-ui.png)
 
-![Share Request](/images/bug-forge/daily/gift-lab/share-request.png)
+![Share Request](/images/bug-forge/daily/gift-lab/idor/share-request.png)
 
 The share link is a `base64` encoded string. Decode the value to reveal the underlying identifier.
 
@@ -47,18 +47,18 @@ The share link is a `base64` encoded string. Decode the value to reveal the unde
 ### Step 3 - Decode and Manipulate the Share Token
 Decode the base64 share token to expose the raw list identifier e.g. `listWithId-2`. Base64 is an encoding scheme, not encryption, so the value can be trivially decoded and modified.
 
-![Decoded Value](/images/bug-forge/daily/gift-lab/base64-decoded.png)
+![Decoded Value](/images/bug-forge/daily/gift-lab/idor/base64-decoded.png)
 
 Change the identifier to reference a different list, such as `listWithId-1`, targeting another user's wish list.
 
-![Manipulated Parameter](/images/bug-forge/daily/gift-lab/share-parameter-not-encoded.png)
+![Manipulated Parameter](/images/bug-forge/daily/gift-lab/idor/share-parameter-not-encoded.png)
 
 ---
 
 ### Step 4 - Access Another User's List
 Submit the request with the manipulated identifier. The server resolves the list by ID without verifying whether the requesting user owns it, returning the target list and the flag.
 
-![Flag](/images/bug-forge/daily/gift-lab/flag.png)
+![Flag](/images/bug-forge/daily/gift-lab/idor/flag.png)
 
 ---
 
